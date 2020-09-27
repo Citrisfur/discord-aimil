@@ -1,5 +1,5 @@
 # bot.py
-import os, discord, asyncio, discord.utils, calendar, re, requests
+import os, discord, asyncio, discord.utils, calendar, re, requests, datetime
 from discord.ext import commands
 from dotenv import load_dotenv
 
@@ -8,21 +8,68 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
 
 bot = commands.Bot(command_prefix='a!')
+bot.remove_command('help')
 
 @bot.event
 async def on_ready():
 	global illusoria
 	illusoria = bot.guilds[0]
+	print(f"Aimil was properly initalized at {str(datetime.datetime.now())}")
 
-# write a override help command
-# add logs to startup and to each command
+@bot.command(name='help')
+async def help(ctx, command=''):
+    print(f"help command was run by {str(ctx.author)} at {str(datetime.datetime.now())}")
+    header = '''
+All commands for Aimil begin with the prefix 'a!'. Most commands are also formatted into user-friendly strings, instead of returning primital values.
+In the usage statements, parameters specified with {curly braces} required, while (parenthesis) are optional.
+For any issues, please contact @Citrisfur#0404, or nathanscoy@gmail.com.
+'''
+    commandList = {
+        "help": '''
+help // Displays a list of commands that Aimil can recognize.
+    Usage: a!help (command)
+    [string] command - specifies a command to display additional information about.''',
+        "ping": '''
+ping // Returns the bot's latency in seconds.
+    Usage: a!ping''',
+    }
 
-@bot.command(name='status', help="Displays a message if the bot's script is running")
-async def status(ctx):
-	await ctx.send("Aimil is online.")
+    if command != '':
+        if command.lower() in commandList:
+            await ctx.send(header + commandList[command.lower()])
+        else:
+            await ctx.send("The specified command doesn't exist. Recheck the typing, or try the command list with a!help.")
+    else:
+        await ctx.send(header + '''
+=== Command List ===
+
+help
+ping
+tech
+joined
+echo
+
+== Moderator ==
+
+giverole
+removerole
+removeintro
+
+= Debugging =
+
+wikitest
+listemoji
+modcheck
+''')
+
+@bot.command(name='ping')
+async def ping(ctx):
+    print(f"ping command was run by {str(ctx.author)} at {str(datetime.datetime.now())}")
+    await ctx.send(f"Aimil is latent by {str(bot.latency)} seconds.")
 
 @bot.command(name="wikitest", help="a way to test the wiki's status")
 async def wikitest(ctx):
+	print(f"wikitest command was run by {str(ctx.author)} at {str(datetime.datetime.now())}")
 	page = requests.get("http://ichno.org/illusoria/doku.php?id=players:citrisfur")
 	pageText = page.text
 	output = "Testing on Citrisfur's wiki page:\nInformation as it appears on the wiki:\n"
@@ -39,6 +86,7 @@ async def wikitest(ctx):
 
 @bot.command(name="tech", help="retrieves a tech from the wiki")
 async def tech(ctx, techName):
+	print(f"tech command was run by {str(ctx.author)} at {str(datetime.datetime.now())}")
 	await ctx.trigger_typing()
 	pageNum = 1
 	pages = {
@@ -68,6 +116,7 @@ async def tech(ctx, techName):
 
 @bot.command(name="listemoji", help="lists all server emojis")
 async def listemoji(ctx):
+	print(f"listemoji command was run by {str(ctx.author)} at {str(datetime.datetime.now())}")
 	emojiList = ''
 	i = 0
 	for emoji in illusoria.emojis:
@@ -82,6 +131,7 @@ async def listemoji(ctx):
 
 @bot.command(name="joined", help="displays the date and time of a user's join")
 async def joined(ctx, name=''):
+	print(f"joined command was run by {str(ctx.author)} at {str(datetime.datetime.now())}")
 	if name == '':
 		name = ctx.author.name
 	member = await illusoria.query_members(query=name, limit=1, user_ids=None, cache=True)
@@ -93,10 +143,12 @@ async def joined(ctx, name=''):
 
 @bot.command(name='echo', help="returns the user's argument")
 async def echo(ctx, msg):
+	print(f"echo command was run by {str(ctx.author)} at {str(datetime.datetime.now())}")
 	await ctx.send(msg)
 
 @bot.command(name="giverole")
 async def giverole(ctx, addingRole, person):
+	print(f"giverole command was run by {str(ctx.author)} at {str(datetime.datetime.now())}")
 	for role in illusoria.roles:
 		if str(addingRole) in role.name:
 			addingRole = role
@@ -112,6 +164,7 @@ async def giverole(ctx, addingRole, person):
 @bot.command(name="removerole")
 @commands.has_role("Mod Gestapo")
 async def removerole(ctx, removingRole, person):
+	print(f"removerole command was run by {str(ctx.author)} at {str(datetime.datetime.now())}")
 	removeRole = removingRole
 	member = await illusoria.query_members(query=person, limit=1, user_ids=None, cache=True)
 	for role in member[0].roles:
@@ -128,6 +181,7 @@ async def removerole(ctx, removingRole, person):
 
 @bot.command(name="removeintro")
 async def removeintro(ctx, person):
+	print(f"removeintro command was run by {str(ctx.author)} at {str(datetime.datetime.now())}")
 	confirmCheck = True
 	confirm = ''
 
@@ -153,6 +207,7 @@ async def removeintro(ctx, person):
 @bot.command(name="modcheck")
 @commands.has_role("Mod Gestapo")
 async def modcheck(ctx):
+	print(f"modcheck command was run by {str(ctx.author)} at {str(datetime.datetime.now())}")
 	await ctx.send("pass")
 
 @bot.event
