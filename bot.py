@@ -129,7 +129,7 @@ async def listemoji(ctx):
 
 	await ctx.send(emojiList[:-2])
 
-@bot.command(name="joined", help="displays the date and time of a user's join")
+@bot.command(name="joined")
 async def joined(ctx, name=''):
 	print(f"joined command was run by {str(ctx.author)} at {str(datetime.datetime.now())}")
 	if name == '':
@@ -141,12 +141,61 @@ async def joined(ctx, name=''):
 	else:
 		await ctx.send("Member not found.")
 
-@bot.command(name='echo', help="returns the user's argument")
+@bot.command(name='echo')
 async def echo(ctx, msg):
 	print(f"echo command was run by {str(ctx.author)} at {str(datetime.datetime.now())}")
 	await ctx.send(msg)
 
+@bot.command(name='createrole')
+@commands.has_role("Mod Gestapo")
+async def createrole(ctx, roleName, r, g, b):
+	print(f"createrole command was run by {str(ctx.author)} at {str(datetime.datetime.now())}")
+	newRoleID = 0
+	highestPosition = 0
+	await illusoria.create_role(name=roleName, color=discord.Color.from_rgb(int(r), int(g), int(b)))
+
+	for role in illusoria.roles:
+		if role.name == roleName:
+			newRoleID = role.id
+
+	for role in ctx.author.roles:
+		if role.position > highestPosition:
+			highestPosition = role.position
+
+	await illusoria.get_role(newRoleID).edit(position=highestPosition+1, reason="putting the role at high priority for username color change")
+	await ctx.author.add_roles(illusoria.get_role(newRoleID))
+	await ctx.send(f"you should now have the new role \"{roleName}\".")
+
+@bot.command(name='kick')
+async def kick(ctx):
+	print(f"kick command was run by {str(ctx.author)} at {str(datetime.datetime.now())}")
+	await illusoria.kick(ctx.author)
+	await ctx.send(f"user {ctx.author} kicked.")
+
+@bot.command(name='deleterole')
+@commands.has_role("Mod Gestapo")
+async def createrole(ctx, roleName):
+	print(f"deleterole command was run by {str(ctx.author)} at {str(datetime.datetime.now())}")
+	confirmCheck = True
+
+	for role in illusoria.roles:
+		if roleName.lower() in role.name.lower():
+			await ctx.send(f"role \"{role.name}\" found. delete this role? y/n")
+			while confirmCheck:
+				confirm = await bot.wait_for('message')
+				if confirm.author == ctx.author:
+					confirmCheck = False
+
+			if confirm.content == 'y':
+				await role.delete()
+				await ctx.send(f"role \"{role.name}\" was deleted.")
+				break
+			else:
+				await ctx.send("role was not deleted.")
+				confirmCheck = True
+
 @bot.command(name="giverole")
+@commands.has_role("Mod Gestapo")
 async def giverole(ctx, addingRole, person):
 	print(f"giverole command was run by {str(ctx.author)} at {str(datetime.datetime.now())}")
 	for role in illusoria.roles:
@@ -203,6 +252,22 @@ async def removeintro(ctx, person):
 
 	if confirm == '':
 		await ctx.send(f"no intros by user {person} were found.")
+
+@bot.command(name='lastmessage')
+async def lastmessage(ctx, name):
+	print(f"removeintro command was run by {str(ctx.author)} at {str(datetime.datetime.now())}")
+	member = await illusoria.query_members(query=name, limit=1, user_ids=None, cache=True)
+	if member != []:
+		for channel in illusoria.channels:
+			try:
+				async for message in channel.history():
+					await ctx.send(f"Message by {member.name} found")
+					print(message.content)
+					break
+			except:
+				pass
+	else:
+		await ctx.send("Member not found.")
 
 @bot.command(name="modcheck")
 @commands.has_role("Mod Gestapo")
